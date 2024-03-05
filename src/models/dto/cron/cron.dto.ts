@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString, IsEnum } from "class-validator";
+import { IsNotEmpty, IsString, IsEnum, IsOptional } from "class-validator";
 import { SCHEDULE_TYPES } from "src/constants";
 
 export class CreateCronJobDto {
@@ -24,6 +24,33 @@ export class CreateCronJobDto {
 
   @IsNotEmpty()
   @IsString()
+  @ApiProperty()
+  startDate: string;
+}
+
+export class UpdateCronJobDto {
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  jobName: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  triggerLink: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  apiKey: string;
+
+  @IsEnum(SCHEDULE_TYPES)
+  @IsOptional()
+  @ApiProperty({ enum: SCHEDULE_TYPES })
+  schedule: string;
+
+  @IsString()
+  @IsOptional()
   @ApiProperty()
   startDate: string;
 }

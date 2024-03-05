@@ -1,7 +1,10 @@
 import { Injectable, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { CreateCronJobDto } from "../../models/dto/cron/cron.dto";
+import {
+  CreateCronJobDto,
+  UpdateCronJobDto,
+} from "../../models/dto/cron/cron.dto";
 import { IdGeneratorService } from "../idGenerator/idgenerator.service";
 import { STATUS_CODES, SCHEDULE_TYPES } from "../../constants";
 import { CronJobSchema } from "src/models/schema/cron.schema";
@@ -24,8 +27,8 @@ export class CronService {
       this.logger.log(`Creating cron job with ID: ${jobId}`);
 
       const startDate = new Date(createCronJobDto.startDate);
-
       const currentDate = new Date();
+
       if (this.isSameDay(startDate, currentDate)) {
         let cronExpression = this.getCronExpression(createCronJobDto.schedule);
         this.scheduleCronJob(jobId.toString(), cronExpression);
@@ -39,6 +42,8 @@ export class CronService {
       await this.cronJobModel.create({
         jobId: jobId.toString(),
         jobName: createCronJobDto.jobName,
+        triggerLink: createCronJobDto.triggerLink,
+        apiKey: createCronJobDto.apiKey,
         schedule: createCronJobDto.schedule,
         startDate: createCronJobDto.startDate,
         createdAt: new Date().toISOString(),
@@ -58,14 +63,98 @@ export class CronService {
 
   async getAllCronJobs() {
     try {
+      this.logger.log("inside  get all jobs");
       const cronJobs = await this.cronJobModel
-        .find({}, { _id: 0, jobId: 1, jobName: 1, startDate: 1 })
+        .find(
+          {},
+          {
+            _id: 0,
+            jobId: 1,
+            jobName: 1,
+            triggerLink: 1,
+            apiKey: 1,
+            schedule: 1,
+            startDate: 1,
+          }
+        )
         .exec();
 
       return {
         statusCode: STATUS_CODES.STATUS_CODE_200,
         message: "success",
         data: cronJobs,
+      };
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
+  async updateCronJob(jobId: string, updateCronJobDto: UpdateCronJobDto) {
+    try {
+      const existingCronJob = await this.cronJobModel
+        .findOne({ jobId: jobId })
+        .exec();
+
+      if (!existingCronJob) {
+        throw new HttpException("Cron job not found", HttpStatus.NOT_FOUND);
+      }
+
+      const updatedFields: Partial<UpdateCronJobDto> = {};
+
+      if (updateCronJobDto.jobName) {
+        updatedFields.jobName = updateCronJobDto.jobName;
+      }
+      if (updateCronJobDto.triggerLink) {
+        updatedFields.triggerLink = updateCronJobDto.triggerLink;
+      }
+      if (updateCronJobDto.apiKey) {
+        updatedFields.apiKey = updateCronJobDto.apiKey;
+      }
+      if (updateCronJobDto.schedule) {
+        updatedFields.schedule = updateCronJobDto.schedule;
+      }
+      if (updateCronJobDto.startDate) {
+        const startDate = new Date(updateCronJobDto.startDate);
+        const currentDate = new Date();
+
+        if (startDate < currentDate) {
+          throw new HttpException(
+            "Start date must be in the future",
+            HttpStatus.BAD_REQUEST
+          );
+        }
+
+        updatedFields.startDate = updateCronJobDto.startDate;
+      }
+
+      await this.cronJobModel.updateOne({ jobId: jobId }, updatedFields).exec();
+
+      return {
+        statusCode: STATUS_CODES.STATUS_CODE_200,
+        message: "Cron job updated successfully",
+        data: { jobId },
+      };
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
+  async deleteCronJob(jobId: string) {
+    try {
+      this.logger.log(`inside  delete job ${jobId}`);
+      const deletedJob = await this.cronJobModel
+        .deleteOne({ jobId: jobId })
+        .exec();
+
+      if (deletedJob.deletedCount === 0) {
+        throw new HttpException("Cron job not found", HttpStatus.NOT_FOUND);
+      }
+
+      return {
+        statusCode: STATUS_CODES.STATUS_CODE_200,
+        message: "Cron job deleted successfully",
       };
     } catch (e) {
       this.logger.error(e);
