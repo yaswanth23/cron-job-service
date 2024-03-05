@@ -22,6 +22,7 @@ import {
 export class CronController {
   constructor(private readonly cronService: CronService) {}
 
+  @Throttle({ default: { limit: 3, ttl: 5000 } })
   @Post()
   async createCronJob(@Body() createCronJobDto: CreateCronJobDto) {
     return this.cronService.createCronJob(createCronJobDto);
@@ -33,6 +34,7 @@ export class CronController {
     return this.cronService.getAllCronJobs();
   }
 
+  @Throttle({ default: { limit: 3, ttl: 5000 } })
   @Put(":id")
   async updateCronJob(
     @Param("id") id: string,
@@ -41,6 +43,7 @@ export class CronController {
     return this.cronService.updateCronJob(id, updateCronJobDto);
   }
 
+  @Throttle({ default: { limit: 3, ttl: 5000 } })
   @Delete(":id")
   async deleteCronJob(@Param("id") id: string) {
     return this.cronService.deleteCronJob(id);
