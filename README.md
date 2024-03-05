@@ -8,6 +8,7 @@ A system for scheduling and managing cron jobs, allowing users to create, update
 
 - [Installation](#installation)
 - [Project setup](#project-setup)
+- [Running the tests](running-the-tests)
 
 ## Installation
 
@@ -45,3 +46,25 @@ This project implements rate limiting on its APIs with the following configurati
 - **Limit:** 10 requests
 
 This configuration ensures that each client can make up to 10 requests to the protected APIs within a 10-second window. Exceeding this limit will result in rate limiting being applied, protecting the application from abuse and ensuring fair usage.
+
+## Running the tests:
+
+This application includes a suite of tests to verify its functionality. These tests are crucial for maintaining the integrity of the application.
+
+To execute these tests, use the following command in your terminal:
+
+```bash
+# unit tests
+$ npm run test
+
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
+```
+
+## Stay in touch
+
+- Author - [Yaswanth](https://github.com/yaswanth23)
+- Website - [Github](https://github.com/yaswanth23)
