@@ -4,7 +4,7 @@ import mongoose, { Document } from "mongoose";
 export type CronJobDocument = Document;
 
 export const CronJobSchema = new mongoose.Schema({
-  jobId: BigInt,
+  jobId: String,
   jobName: String,
   triggerLink: String,
   apiKey: String,
