@@ -1,14 +1,17 @@
 import { Injectable, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
+import { CronJob } from "cron";
+import axios from "axios";
 import {
   CreateCronJobDto,
   UpdateCronJobDto,
 } from "../../models/dto/cron/cron.dto";
 import { IdGeneratorService } from "../idGenerator/idgenerator.service";
 import { STATUS_CODES, SCHEDULE_TYPES } from "../../constants";
-import { CronJobSchema } from "src/models/schema/cron.schema";
-import { CronJob } from "cron";
+import { CronJobSchema } from "../../models/schema/cron.schema";
+import { CronJobHistorySchema } from "../../models/schema/cronJobHistory.schema";
+import { CronJobType } from "../../models/types/cronJobs";
 
 @Injectable()
 export class CronService {
@@ -17,6 +20,8 @@ export class CronService {
   constructor(
     @InjectModel("cronJob")
     private cronJobModel: Model<typeof CronJobSchema>,
+    @InjectModel("cronJobHistory")
+    private cronJobHistoryModel: Model<typeof CronJobHistorySchema>,
     private idGeneratorService: IdGeneratorService
   ) {}
 
@@ -177,6 +182,7 @@ export class CronService {
       cronExpression,
       () => {
         this.logger.log(`Cron job with ID: ${jobId} is running.`);
+        this.recordExecution(jobId);
       },
       null,
       true,
@@ -199,6 +205,42 @@ export class CronService {
         return "* * * * *"; // Every minute
       default:
         throw new Error("Invalid schedule type");
+    }
+  }
+
+  async recordExecution(jobId: string) {
+    const cronJob = (await this.cronJobModel.findOne({
+      jobId: jobId,
+    })) as CronJobType;
+
+    if (cronJob) {
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+
+      let data = {
+        data: {
+          cronJobId: cronJob.jobId,
+        },
+        createdAt: cronJob.createdAt,
+      };
+
+      try {
+        const response = await axios.post(cronJob.triggerLink, data, config);
+
+        await this.cronJobHistoryModel.create({
+          cronJobId: cronJob.jobId,
+          response: response.data,
+        });
+      } catch (error) {
+        // If the request fails, will store the error message
+        await this.cronJobHistoryModel.create({
+          cronJobId: cronJob.jobId,
+          response: error.message,
+        });
+      }
     }
   }
 }
