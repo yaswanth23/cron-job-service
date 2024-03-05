@@ -216,6 +216,7 @@ export class CronService {
     if (cronJob) {
       const config = {
         headers: {
+          Authorization: `Bearer ${cronJob.apiKey}`,
           "Content-Type": "application/json",
         },
       };
