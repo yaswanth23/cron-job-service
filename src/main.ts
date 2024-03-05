@@ -4,11 +4,12 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ValidationPipe } from "@nestjs/common";
 import { BigIntSerializerPipe } from "./common/pipes/bigIntSerializer.pipe";
 import { BigIntInterceptor } from "./common/interceptors/bigInt.interceptor";
+import { RateLimitExceptionFilter } from "./filters/rate-limit.exception.filter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
-  // enabling swagger only on development
+
   const config = new DocumentBuilder()
     .setTitle("Cron Job service")
     .setDescription("Cron Job service API's.")
@@ -25,6 +26,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe(), new BigIntSerializerPipe());
   app.useGlobalInterceptors(new BigIntInterceptor());
+  app.useGlobalFilters(new RateLimitExceptionFilter());
   await app.listen(9000);
 }
 bootstrap();

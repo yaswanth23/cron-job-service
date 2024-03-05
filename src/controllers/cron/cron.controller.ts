@@ -6,7 +6,9 @@ import {
   Put,
   Delete,
   Param,
+  UseGuards,
 } from "@nestjs/common";
+import { Throttle, ThrottlerGuard } from "@nestjs/throttler";
 import { ApiTags } from "@nestjs/swagger";
 import { CronService } from "../../services/cron/cron.service";
 import {
@@ -16,6 +18,7 @@ import {
 
 @ApiTags("Cron APIs")
 @Controller("api/v1/cron-job")
+@UseGuards(ThrottlerGuard)
 export class CronController {
   constructor(private readonly cronService: CronService) {}
 
@@ -24,6 +27,7 @@ export class CronController {
     return this.cronService.createCronJob(createCronJobDto);
   }
 
+  @Throttle({ default: { limit: 3, ttl: 5000 } })
   @Get()
   async getAllCronJobs() {
     return this.cronService.getAllCronJobs();
