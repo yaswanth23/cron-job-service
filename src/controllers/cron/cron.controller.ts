@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Post, Get } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { CronService } from "../../services/cron/cron.service";
 import { CreateCronJobDto } from "../../models/dto/cron/cron.dto";
@@ -11,5 +11,10 @@ export class CronController {
   @Post()
   async createCronJob(@Body() createCronJobDto: CreateCronJobDto) {
     return this.cronService.createCronJob(createCronJobDto);
+  }
+
+  @Get()
+  async getAllCronJobs() {
+    return this.cronService.getAllCronJobs();
   }
 }

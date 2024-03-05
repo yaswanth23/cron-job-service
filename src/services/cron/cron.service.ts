@@ -56,6 +56,23 @@ export class CronService {
     }
   }
 
+  async getAllCronJobs() {
+    try {
+      const cronJobs = await this.cronJobModel
+        .find({}, { _id: 0, jobId: 1, jobName: 1, startDate: 1 })
+        .exec();
+
+      return {
+        statusCode: STATUS_CODES.STATUS_CODE_200,
+        message: "success",
+        data: cronJobs,
+      };
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
   private isSameDay(date1: Date, date2: Date): boolean {
     return (
       date1.getDate() === date2.getDate() &&
