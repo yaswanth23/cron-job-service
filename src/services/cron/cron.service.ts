@@ -101,7 +101,7 @@ export class CronService {
         throw new HttpException("Cron job not found", HttpStatus.NOT_FOUND);
       }
 
-      const updatedFields: Partial<UpdateCronJobDto> = {};
+      const updatedFields: Partial<UpdateCronJobDto & { updatedAt: Date }> = {};
 
       if (updateCronJobDto.jobName) {
         updatedFields.jobName = updateCronJobDto.jobName;
@@ -128,6 +128,7 @@ export class CronService {
 
         updatedFields.startDate = updateCronJobDto.startDate;
       }
+      updatedFields.updatedAt = new Date();
 
       await this.cronJobModel.updateOne({ jobId: jobId }, updatedFields).exec();
 
