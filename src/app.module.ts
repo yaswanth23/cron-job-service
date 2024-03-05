@@ -7,6 +7,7 @@ import { AppService } from "./app.service";
 import { LoggingInterceptor } from "./middleware/logging.interceptor";
 import { JsonHeaderInterceptor } from "./middleware/jsonHeader.interceptor";
 import { CronModule } from "./modules/cron/cron.module";
+import { WebhookModule } from "./modules/webhook/webhook.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CronModule } from "./modules/cron/cron.module";
     }),
     MongooseModule.forRoot(process.env.MONGO_CONNECTION_STRING),
     CronModule,
+    WebhookModule,
   ],
   controllers: [AppController],
   providers: [
