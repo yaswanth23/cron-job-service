@@ -8,8 +8,8 @@ A system for scheduling and managing cron jobs, allowing users to create, update
 
 - [Installation](#installation)
 - [Project setup](#project-setup)
-- [Running the tests](#running-the-tests)
 - [Accessing Logs](#accessing-logs)
+- [Running the tests](#running-the-tests)
 
 ## Installation
 
