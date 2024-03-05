@@ -92,6 +92,7 @@ export class CronService {
 
   async updateCronJob(jobId: string, updateCronJobDto: UpdateCronJobDto) {
     try {
+      this.logger.log(`inside  update job ${jobId}`);
       const existingCronJob = await this.cronJobModel
         .findOne({ jobId: jobId })
         .exec();
